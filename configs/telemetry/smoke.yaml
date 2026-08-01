@@ -1,0 +1,26 @@
+# Telemetry sized to exercise every code path in a couple of minutes.
+# Numbers here are deliberately too small to mean anything.
+
+telemetry:
+  enabled: true
+  cadence_unit: steps
+  light_every: 2
+  deep_every: 4
+  probe_at_step_zero: true
+
+  probe_seqs: 8
+  probe_max_len: 256
+  probe_stratify: false
+  probe_micro_batch: 4
+
+  n_tokens: 512
+  n_tokens_sweep: [128, 256, 512]
+  sweep_on_deep_only: true
+
+  layer_stride: 8
+  always_layers: [0]
+  top_eig: 8
+  dump_raw: true
+  n_tokens_deep: 32
+  dw_rank: 8
+  flush_rows: 50

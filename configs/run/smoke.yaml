@@ -1,0 +1,21 @@
+# Stage 1 of the cloud smoke test: does the pipeline run at all?
+#
+# Compose LAST, after the model/data/recipe/telemetry overlays:
+#   -c model/smollm2-1.7b.yaml -c data/dolly-smoke.yaml \
+#   -c recipe/smoltulu-sft-1207.yaml -c telemetry/smoke.yaml -c run/smoke.yaml
+#
+# Checkpointing OFF. A full-FT checkpoint of a 1.7B model is 20.5 GB (fp32
+# weights + two fp32 Adam moments) to insure a run that takes two minutes to
+# repeat. Nothing here is worth resuming.
+#
+# Expect ~2-3 minutes of compute after the model download.
+
+run_name: smoke
+
+eval_strategy: "no"
+save_strategy: "no"
+save_total_limit: null
+logging_steps: 1
+
+recipe:
+  max_steps: 20

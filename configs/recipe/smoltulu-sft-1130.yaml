@@ -1,0 +1,38 @@
+# SmolTulu SFT-1130, transcribed. Second arm -- not the first run.
+#
+# Source: Alrashed (2024), arXiv:2412.08347, Table 2. LR 9.0e-5 at batch size 8,
+# LR/BS = 11.25e-6: a 29x higher learning rate than the 1207 column at the same
+# model and dataset. Both are published, so running both costs no tuning and
+# buys a principled learning-rate axis at fixed model and fixed data.
+#
+# Two cautions before enabling this arm:
+#
+#   1. 9.0e-5 is near pretraining-scale for full fine-tuning of a 1.7B model.
+#      Expect loss spikes and possibly divergence. For telemetry that is
+#      signal, not failure, but budget for the run being unusable.
+#   2. Batch size 8 yields 4x the optimizer steps of the 1207 arm for identical
+#      token budget. Telemetry cadence must stay token-based (the default) or
+#      the two arms will not share an x-axis.
+
+run_name: smoltulu-sft-1130
+
+recipe:
+  provenance: >-
+    SmolTulu SFT-1130 (Alrashed 2024, arXiv:2412.08347, Table 2): LR 9.0e-5 @
+    effective batch 8, LR/BS = 11.25e-6, on SmolLM2-1.7B over
+    allenai/tulu-3-sft-mixture. Schedule/warmup/decay/loss-reduction inherited
+    from Tulu 3 (Lambert et al. 2024, arXiv:2411.15124).
+
+  lr: 9.0e-5
+  effective_batch: 8
+  epochs: 2.0
+
+  lr_scheduler: linear
+  warmup_ratio: 0.03
+  weight_decay: 0.0
+  max_grad_norm: 1.0
+  optim: adamw_torch_fused
+  loss_reduction: sum
+
+  per_device_batch: 4
+  max_steps: -1

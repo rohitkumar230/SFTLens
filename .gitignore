@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+runs/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+.DS_Store
+
+# pulled-down telemetry archives from cloud runs -- large, regenerable, never
+# meant to be committed
+runpod-*/

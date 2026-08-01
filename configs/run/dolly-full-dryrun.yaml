@@ -1,0 +1,29 @@
+# Retunes telemetry cadence for the dolly-full dry run's much shorter
+# trajectory (~5.9M training tokens, ~906 steps) versus the tulu3-50k arm
+# telemetry/default.yaml is calibrated for (~51.7M tokens, ~3,125 steps).
+# Everything else -- n_tokens=8192, probe_seqs=96, the full n-sweep -- stays
+# at production settings: this run exists to prove they work on real
+# hardware, not to run a smaller version of them.
+#
+# Compose LAST:
+#   -c model/smollm2-1.7b.yaml -c data/dolly-full.yaml \
+#   -c recipe/smoltulu-sft-1207.yaml -c telemetry/default.yaml \
+#   -c run/dolly-full-dryrun.yaml
+#
+# Checkpointing is OFF, not base.yaml's default. A full-FT checkpoint of a
+# 1.7B model is ~20.5 GB; save_total_limit=2 alone needs ~41 GB, which this
+# pod's 20 GB free disk cannot hold. The run itself takes on the order of
+# 10-25 minutes end to end -- short enough that a full restart on failure
+# costs less than the disk this would otherwise reserve. Same principle as
+# run/smoke.yaml and run/preflight.yaml, just applied at a size where it
+# also happens to be load-bearing rather than merely tidy.
+
+run_name: dolly-full
+
+eval_strategy: steps
+save_strategy: "no"
+save_total_limit: null
+
+telemetry:
+  light_every: 400000     # ~14 probes across the trajectory
+  deep_every: 1600000     # ~3-4 probes, must be a multiple of light_every

@@ -1,0 +1,27 @@
+# SmolLM2-1.7B base. The model SmolTulu fine-tuned, so the recipe transfers
+# without extrapolation.
+#
+# Shape facts the telemetry depends on (config.json, verified):
+#   hidden_size 2048   intermediate_size 8192   num_hidden_layers 24
+#   num_attention_heads 32   num_key_value_heads 32   (no GQA)
+#
+# Consequences:
+#   - down_proj has D_in 8192 against 2048 everywhere else: a 4x input-side
+#     dimension contrast at fixed depth and fixed data.
+#   - down_proj (8192 -> 2048) versus o_proj (2048 -> 2048) holds D_out exactly
+#     equal while varying D_in, which is the cleanest controlled pair available.
+#   - Because there is no GQA, q/k/v/o_proj are all square 2048x2048. There is
+#     NO output-side dimension contrast on this model. Any claim about how the
+#     output factor Omega scales with D_out cannot be tested here.
+#
+# The base vocabulary already reserves <|im_start|> (id 1) and <|im_end|> (id 2),
+# so ChatML needs no embedding resize.
+
+model:
+  model_id: HuggingFaceTB/SmolLM2-1.7B
+  attn_implementation: sdpa
+  param_dtype: float32
+  bf16: true
+  gradient_checkpointing: true
+  im_start: "<|im_start|>"
+  im_end: "<|im_end|>"

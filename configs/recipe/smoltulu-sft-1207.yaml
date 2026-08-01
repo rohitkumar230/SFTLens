@@ -1,0 +1,54 @@
+# SmolTulu SFT-1207, transcribed. Do not tune these.
+#
+# Source: Alrashed (2024), "SmolTulu: Higher Learning Rate to Batch Size Ratios
+# Can Lead to Better Reasoning in SLMs", arXiv:2412.08347, Table 2.
+#
+#   Hyperparameter        SmolTulu    SmolTulu    Tulu 3    Tulu 3
+#                         SFT-1130    SFT-1207    SFT 8b    SFT 70b
+#   Learning Rate         9.0e-5      3.1e-6      5.0e-6    2.0e-6
+#   Batch Size            8           32          128       128
+#   LR/BS x 1e6           11.25       0.097       0.039     0.016
+#
+# We take the 1207 column, applied to the model and dataset it was selected on
+# (SmolLM2-1.7B / allenai/tulu-3-sft-mixture). Nothing is extrapolated.
+#
+# Schedule, warmup, decay and loss reduction are not in Table 2; they are
+# inherited from the Tulu 3 pipeline SmolTulu reuses (Lambert et al. 2024,
+# arXiv:2411.15124): linear schedule, 0.03 warmup ratio, weight decay 0,
+# 2 epochs, sum-reduced token loss.
+#
+# Subsetting the dataset changes the number of optimizer steps and therefore
+# the absolute length of warmup and decay. It does not change LR or batch size,
+# so the ratio the paper identifies as controlling is preserved.
+
+recipe:
+  provenance: >-
+    SmolTulu SFT-1207 (Alrashed 2024, arXiv:2412.08347, Table 2): LR 3.1e-6 @
+    effective batch 32, LR/BS = 0.097e-6, on SmolLM2-1.7B over
+    allenai/tulu-3-sft-mixture. Schedule/warmup/decay/loss-reduction inherited
+    from Tulu 3 (Lambert et al. 2024, arXiv:2411.15124).
+
+  lr: 3.1e-6
+  effective_batch: 32
+  epochs: 2.0
+
+  lr_scheduler: linear
+  warmup_ratio: 0.03
+  weight_decay: 0.0
+  max_grad_norm: 1.0
+  optim: adamw_torch_fused
+  loss_reduction: sum
+
+  # Sizing only. per_device_batch x grad_accum is held equal to
+  # effective_batch, so these do not perturb the recipe.
+  #
+  # 4 is chosen for an 80 GB card. The binding constraint is not the model:
+  #   27.4 GB  training state (fp32 master + grads + two Adam moments)
+  #   12.3 GB  telemetry probe accumulator at n_tokens=8192
+  #    8.1 GB  logits at batch 4 x seq 4096 (bf16 + the fp32 cast that cross
+  #            entropy needs + log_softmax over a 49k vocabulary)
+  # Logits scale linearly with per_device_batch and are the term that bites:
+  # batch 8 at seq 4096 costs 16.1 GB there alone. Raise this only after
+  # checking the [env] memory line the run prints.
+  per_device_batch: 4
+  max_steps: -1

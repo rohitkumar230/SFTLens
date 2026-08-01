@@ -1,0 +1,23 @@
+# Run-level defaults. Compose with overlays, e.g.
+#   sftlens-train -c model/smollm2-1.7b.yaml -c data/tulu3-50k.yaml \
+#                 -c recipe/smoltulu-sft-1207.yaml -c telemetry/default.yaml
+#
+# Dataclass defaults in sftlens/config.py are the source of truth; this file
+# only pins the things a run should state out loud.
+
+run_name: smoltulu-sft-1207
+output_dir: runs/${run_name}
+seed: 42
+
+logging_steps: 5
+eval_steps: 100
+save_steps: 200
+# A full-FT checkpoint of a 1.7B model is ~20.5 GB (6.8 fp32 weights + 13.7
+# Adam moments). Keeping all 15 that save_steps=200 would produce over a
+# 3,125-step run is 308 GB. These two exist for crash recovery only.
+# For research artifacts use telemetry.snapshot_weights_on_deep instead:
+# bf16 weights-only, 3.4 GB, written on the same grid as the deep probes.
+save_total_limit: 2
+dataloader_num_workers: 4
+group_by_length: true
+report_to: none

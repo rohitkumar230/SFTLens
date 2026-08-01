@@ -1,0 +1,57 @@
+# Telemetry defaults for the 1207 arm.
+#
+# Cadence is in TOKENS, not steps. At 50k examples the run is ~90M training
+# tokens, so light_every 2M gives ~45 scalar probes and deep_every 16M gives
+# ~6 deep dumps across the trajectory.
+#
+# n_tokens is 8192 rather than the 1024 an earlier draft used. Participation
+# ratio estimated from N token samples of a D-dimensional covariance is capped
+# near N: at N=1024 an isotropic D=8192 covariance measures PR ~910, and the
+# 4x down_proj/o_proj dimension contrast collapses to 1.3x. The sweep re-probes
+# the same step at several N so the finite-N trend is measurable rather than
+# assumed away.
+
+telemetry:
+  enabled: true
+
+  cadence_unit: tokens
+  # The tulu3-50k run is ~51.7M training tokens (measured: mean 517 tokens per
+  # conversation, 50k conversations, 2 epochs). That gives ~26 light probes and
+  # ~6 deep probes across the trajectory.
+  light_every: 2000000
+  deep_every: 8000000
+  probe_at_step_zero: true
+
+  probe_seqs: 96
+  probe_max_len: 1024
+  probe_stratify: true
+  probe_micro_batch: 8
+
+  n_tokens: 8192
+  n_tokens_sweep: [1024, 2048, 4096, 8192]
+  sweep_on_deep_only: true
+
+  matmul_dtype: float32
+  reduce_dtype: float64
+  log_uncentered: true
+  delta_positions: all
+
+  layer_stride: 4
+  always_layers: [0, 1]
+  module_suffixes:
+    - self_attn.q_proj
+    - self_attn.k_proj
+    - self_attn.v_proj
+    - self_attn.o_proj
+    - mlp.gate_proj
+    - mlp.up_proj
+    - mlp.down_proj
+
+  top_eig: 64
+  dump_raw: true
+  n_tokens_deep: 256
+  track_dw_layers: []      # empty -> every probed layer
+  dw_rank: 64
+
+  seed: 1234
+  flush_rows: 2000

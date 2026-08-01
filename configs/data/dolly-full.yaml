@@ -1,0 +1,25 @@
+# The full dolly-15k dataset, untrimmed -- unlike data/dolly-smoke.yaml, which
+# deliberately caps subset_size and pairs with recipe.max_steps for a
+# multi-second pipeline check.
+#
+# This is the pre-registered dry run agreed before committing to the real
+# tulu3-50k arm: apply the SmolTulu SFT-1207 recipe faithfully, unmodified, to
+# a real (if not recipe-matched) dataset, and let telemetry observe an actual
+# trajectory rather than a handful of steps. It produces no scientific claim
+# on its own -- dolly's supervised-token fraction (41%) and total token budget
+# differ sharply from the tulu-3 mixture the recipe was selected against (see
+# README "Known limits") -- but it is the last checkpoint before spending
+# H100 time on the real thing.
+
+run_name: dolly-full
+
+data:
+  dataset_id: databricks/databricks-dolly-15k
+  split: train
+  loader: dolly
+  subset_size: null       # no subsampling: every example that survives the length filter
+  stratify_column: null   # irrelevant when not subsampling
+  max_seq_len: 1024       # covers 98.5% of dolly (measured); drop-not-truncate on the rest
+  on_overflow: drop
+  eval_size: 500
+  num_proc: 4

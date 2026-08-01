@@ -1,0 +1,30 @@
+# Proportional stratified subset of the mixture SmolTulu fine-tuned on.
+#
+# Stratifying on `source` preserves the mixture proportions the recipe's
+# learning rate was selected against. The full mixture is 939,343 examples
+# across 19 sources; subsampling uniformly at random would preserve the
+# proportions in expectation, but stratifying makes it exact and reproducible.
+#
+# Composition of what you are measuring (source shares, full mixture):
+#   ~36% math    personahub_math 16.0, numinamath 6.9, open_math_gsm8k 5.3,
+#                personas-math-grade 5.3, interm_algebra 2.1
+#   ~15% code    evol_codealpaca 11.4, personahub_code 3.7
+#   ~21% chat    wildchat 10.7, aya 10.7
+#   ~11% safety  wildguardmix 5.3, wildjailbreak 5.3
+#    ~9% flan_v2
+# Over half is math and code, so the layer geometry measured here is
+# substantially math/code token statistics. State this alongside any result.
+#
+# 50k examples at effective batch 32 for 2 epochs is ~3,125 optimizer steps --
+# enough trajectory to resolve a trend, small enough to run in a few hours.
+
+data:
+  dataset_id: allenai/tulu-3-sft-mixture
+  split: train
+  loader: tulu3
+  subset_size: 50000
+  stratify_column: source
+  max_seq_len: 4096
+  on_overflow: drop
+  eval_size: 1000
+  num_proc: 8

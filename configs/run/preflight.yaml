@@ -1,0 +1,36 @@
+# Stage 2 of the cloud smoke test: will the REAL run fit in memory?
+#
+#   -c model/smollm2-1.7b.yaml -c data/dolly-smoke.yaml \
+#   -c recipe/smoltulu-sft-1207.yaml -c telemetry/default.yaml \
+#   -c run/preflight.yaml
+#
+# Cheap data (dolly), but the PRODUCTION telemetry sizing: n_tokens 8192,
+# probe_seqs 96, the full n-sweep, a real deep dump. That combination is what
+# allocates the 12.3 GB probe accumulator alongside the 27.4 GB of training
+# state, and it is the thing most likely to OOM on the real run.
+#
+# Runs 6 steps with one light and one deep probe. ~3-4 minutes.
+#
+# WHAT THIS DOES NOT COVER
+#   dolly sequences top out near 1024 tokens, so the logits peak exercised here
+#   is a quarter of the real run's (batch 4 x seq 4096 = 8.1 GB). The [env]
+#   memory budget line the run prints reports the real figure -- read it rather
+#   than inferring safety from the fact that this passed.
+
+run_name: preflight
+
+eval_strategy: "no"
+save_strategy: "no"
+save_total_limit: null
+logging_steps: 1
+
+recipe:
+  max_steps: 6
+
+telemetry:
+  # Step units here, not tokens: 6 steps is far too short for a token-based
+  # cadence to fire twice.
+  cadence_unit: steps
+  light_every: 2
+  deep_every: 4
+  probe_at_step_zero: true

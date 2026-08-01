@@ -1,0 +1,24 @@
+# Smoke dataset. Not a research configuration.
+#
+# databricks-dolly-15k is small, single-turn, and downloads in seconds, which
+# makes it the right thing to exercise the pipeline against before committing
+# GPU hours. Its token statistics are NOT representative of the tulu-3 mixture
+# (shorter, human-written, no math or code emphasis), so telemetry collected
+# here validates the plumbing and nothing else.
+
+run_name: smoke-dolly
+
+data:
+  dataset_id: databricks/databricks-dolly-15k
+  split: train
+  loader: dolly
+  subset_size: 2000
+  stratify_column: null
+  max_seq_len: 1024
+  on_overflow: drop
+  eval_size: 128
+  num_proc: 4
+
+recipe:
+  per_device_batch: 2
+  max_steps: 20
