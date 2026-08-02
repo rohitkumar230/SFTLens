@@ -22,7 +22,7 @@ choices made along the way.
 
 The full pipeline was run end to end on an H100 GPU. Complete results,
 including data tables and figures, are in
-[`analysis/dolly_full_dryrun/FINDINGS.md`](analysis/dolly_full_dryrun/FINDINGS.md).
+[`analysis/dolly_full_dryrun/FINDINGS.md`](analysis/dolly_full_dryrun/FINDINGS.md). The tables are also provided here [`analysis/dolly_full_dryrun/tables`](analysis/dolly_full_dryrun/tables)
 
 Highlights:
 
